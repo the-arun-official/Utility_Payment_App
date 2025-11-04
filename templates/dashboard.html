@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UtilityPay — Dashboard</title>
+
+  <!-- System / Inter font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <style>
+    :root {
+      --bg: linear-gradient(180deg, #f6f8fb, #eef2f8);
+      --glass: rgba(255, 255, 255, 0.65);
+      --card: rgba(255, 255, 255, 0.75);
+      --muted: #6b6f76;
+      --text: #0f1724;
+      --accent: #0a84ff;
+      --border: rgba(15, 23, 36, 0.06);
+      --radius: 14px;
+      --shadow: 0 8px 28px rgba(12, 15, 20, 0.06);
+      --tiny: 12px;
+      --small: 13px;
+      --base: 14px;
+      --glass-blur: 8px;
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0
+    }
+
+    body {
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      gap: 12px;
+      font-size: var(--base);
+    }
+
+    /* header (glass) */
+    header.topbar {
+      backdrop-filter: blur(var(--glass-blur));
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(248, 249, 251, 0.82));
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .left,
+    .right {
+      display: flex;
+      align-items: center;
+      gap: 12px
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #4fc3ff);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      box-shadow: 0 6px 18px rgba(10, 132, 255, 0.12);
+      flex-shrink: 0;
+    }
+
+    .meta {
+      display: flex;
+      flex-direction: column;
+      line-height: 1
+    }
+
+    .meta #userName {
+      font-weight: 600
+    }
+
+    .meta .email {
+      font-size: var(--small);
+      color: var(--muted)
+    }
+
+    .controls {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .btn {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--glass);
+      cursor: pointer;
+      font-weight: 600
+    }
+
+    .btn.small {
+      padding: 6px 10px;
+      font-size: 13px
+    }
+
+    .btn.primary {
+      background: linear-gradient(180deg, var(--accent), #0b6aff);
+      color: white;
+      border: none
+    }
+
+    .btn.ghost {
+      background: transparent
+    }
+
+    main.content {
+      display: grid;
+      grid-template-columns: 320px 1fr 360px;
+      gap: 18px;
+      padding: 18px;
+      flex: 1;
+      align-content: start;
+    }
+
+    @media (max-width:1100px) {
+      main.content {
+        grid-template-columns: 1fr;
+        padding: 12px
+      }
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 12px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      backdrop-filter: blur(6px)
+    }
+
+    .title {
+      font-weight: 700;
+      font-size: 13px
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    /* left profile & stats */
+    .profile-row {
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    .stat {
+      padding: 10px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #fff, #fbfdff);
+      border: 1px solid var(--border)
+    }
+
+    .stat .value {
+      font-weight: 700;
+      font-size: 15px
+    }
+
+    .stat .label {
+      font-size: 13px;
+      color: var(--muted)
+    }
+
+    /* center: bill & transactions */
+    .bill-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      flex-wrap: wrap
+    }
+
+    .bill-left {
+      min-width: 0
+    }
+
+    .bill-amount {
+      margin: 15px 0px;
+      font-weight: 700;
+      font-size: 18px
+    }
+
+    .pay-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px
+    }
+
+    .search-row {
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .input,
+    .select {
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: transparent;
+      font-size: 13px
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: 440px;
+      border-radius: 8px
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px
+    }
+
+    th,
+    td {
+      padding: 20px 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      white-space: nowrap
+    }
+
+    tr:hover td {
+      background: #fbfdff
+    }
+
+    .tag {
+      padding: 5px 8px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 700;
+      font-size: 12px
+    }
+
+    .tag.success {
+      background: #2ea44f
+    }
+
+    .tag.pending {
+      background: #f6a623
+    }
+
+    .tag.failed {
+      background: #e5534b
+    }
+
+    /* right notifications */
+    .notif-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 420px;
+      overflow: auto
+    }
+
+    .notif {
+      padding: 10px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #fff, #fbfdff);
+      border: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted)
+    }
+
+    /* bottom sync */
+    #syncIndicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: #4CAF50;
+      /* green */
+      box-shadow: 0 0 6px rgba(76, 175, 80, 0.6);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      opacity: 0.7;
+    }
+
+    .last-updated {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: 8px
+    }
+
+    .toast-container {
+      position: fixed;
+      top: 10px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      padding: 10px 16px;
+      border-radius: 6px;
+      color: white;
+      font-size: 15px;
+      min-width: 250px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      animation: fadeIn 0.3s ease, fadeOut 0.5s ease 3s forwards;
+    }
+
+    .toast.success {
+      background-color: #4CAF50;
+    }
+
+    .toast.error {
+      background-color: #e53935;
+    }
+
+    .toast.info {
+      background-color: #2195f3d8;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+    }
+
+    .confirm-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9998;
+      transition: opacity 0.3s ease;
+    }
+
+    .confirm-overlay.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .confirm-box {
+      background: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      min-width: 280px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .confirm-box p {
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .confirm-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .confirm-actions .btn {
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="left">
+      <div class="avatar" id="avatar">U</div>
+      <div class="meta">
+        <div id="profileName">Loading...</div>
+        <div class="email" id="userEmail"></div>
+      </div>
+    </div>
+
+    <div class="right controls">
+      <button id="logoutBtn" class="btn small">Logout</button>
+      <div class="last-updated" id="lastUpdated"></div>
+      <div id="syncIndicator"> </div>
+    </div>
+  </header>
+
+  <main class="content">
+    <!-- LEFT -->
+    <section>
+      <div class="card">
+        <div class="title">Profile</div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <div
+            style="width:52px;height:52px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#3bb3ff);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px"
+            id="avatarShort">U</div>
+          <div>
+            <div id="profileNamebottom" style="font-weight:700">User</div>
+            <div class="muted" id="profileEmail">user@example.com</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="title">Quick Stats</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
+          <div class="stat">
+            <div class="value" id="statAvg">—</div>
+            <div class="label">Avg / month</div>
+          </div>
+          <div class="stat">
+            <div class="value" id="statPayments">—</div>
+            <div class="label">Total payments</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CENTER -->
+    <section>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="title">Current Bill Summary</div>
+          <div class="muted" id="billStatus"> </div>
+        </div>
+
+        <div class="bill-row">
+          <div class="bill-left">
+            <div class="muted"></div>
+            <div id="billType" style="font-weight:700; margin-top:10px">—</div>
+            <div style="margin-top:20px" class="muted">Due Date</div>
+            <div id="billDue" style="margin-top:8px" class="muted">—</div>
+          </div>
+
+          <div style="text-align:right">
+            <div class="muted">Amount Due</div>
+            <div class="bill-amount" id="billAmount">—</div>
+            <div class="pay-actions">
+              <button id="payNowBtn" class="btn primary small">Pay Now</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="billNote" class="muted" style="margin-top:10px"></div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="title">Upcoming & Pending Bills</div>
+          <div class="muted" id="upcomingCount"></div>
+        </div>
+
+        <div id="upcomingList" class="table-wrap" style="margin-top:8px">
+          <table style="width:100%;border-collapse:collapse;font-size:13px">
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="upcomingBillsBody">
+              <tr>
+                <td colspan="5" class="muted">Loading…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="title">Recent Transactions</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="searchInput" class="input" placeholder="Search plan / amount / date" style="min-width:220px" />
+            <select id="statusFilter" class="select">
+              <option value="">All statuses</option>
+              <option value="success">Success</option>
+              <option value="pending">Pending</option>
+              <option value="failed">Failed</option>
+            </select>
+            <button id="downloadCsvBtn" class="btn btn-success"
+              style="display:flex;justify-content:space-between;align-items:center ">
+              Full History⬇️
+            </button>
+          </div>
+        </div>
+
+        <!-- ✅ SCROLLABLE CONTAINER -->
+        <div class="table-container" style="
+          margin-top:12px;
+          max-height:300px;
+          overflow-y:auto;
+          border:1px solid #ddd;
+          border-radius:8px;
+        ">
+          <table aria-describedby="Recent Transactions" style="width:100%; border-collapse:collapse;">
+            <thead style="position:sticky; top:0; background:#f7f7f7; z-index:2;">
+              <tr>
+                <th style="padding:8px;text-align:left;">Date</th>
+                <th style="padding:8px;text-align:left;">Type</th>
+                <th style="padding:8px;text-align:left;">Amount</th>
+                <th style="padding:8px;text-align:left;">Status</th>
+                <th style="padding:8px;text-align:left;">Time</th>
+                <th style="padding:8px;text-align:right;">Receipt</th>
+              </tr>
+            </thead>
+            <tbody id="paymentList">
+              <tr>
+                <td colspan="5" class="muted" style="text-align:center;">Loading…</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT -->
+    <aside>
+      <div class="card">
+        <div class="title">Reminders & Alerts</div>
+        <div class="notif-list" id="notificationList">
+          <div class="muted">Loading…</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="title">Quick Actions</div>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+          <button id="contactSupportBtn" class="btn">Contact Support</button>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="title">Developer</div>
+        <div class="muted">Version: dev • Arun</div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="muted" style="text-align:center;padding:8px">UtilityPay — secure • efficient</footer>
+
+  <script>
+    (function () {
+      // ---------- STATE & SETUP ----------
+      const state = { payments: [], notifications: [], bill: null, profile: null, upcoming: [], saved_methods: [], lastUpdated: null };
+      let inflight = null;
+      let searchDebounce = null;
+
+      const paymentListEl = document.getElementById('paymentList');
+      const notifListEl = document.getElementById('notificationList');
+      const syncDotEl = document.getElementById('syncDot');
+      const lastUpdatedEl = document.getElementById('lastUpdated');
+
+      // ---------- TOKEN HELPERS ----------
+      function getAccessToken() { return sessionStorage.getItem('access_token'); }
+      function getRefreshToken() { return sessionStorage.getItem('refresh_token'); }
+
+      if (!getAccessToken()) window.location.href = '/';
+
+      // ---------- REFRESH TOKEN ----------
+      async function refreshAccessToken() {
+        const refresh = getRefreshToken();
+        if (!refresh) return false;
+
+        try {
+          const res = await fetch('/auth/refresh', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + refresh }
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            sessionStorage.setItem('access_token', data.access_token);
+            return true;
+          } else if (res.status === 401) {
+            sessionStorage.clear();
+            showToast('⚠️ Session expired. Please login again.', 'error');
+            window.location.href = '/';
+            return false;
+          } else return false;
+        } catch (e) {
+          console.error('Refresh error', e);
+          return false;
+        }
+      }
+
+      // ---------- FETCH WITH AUTH ----------
+      async function fetchWithAuth(url, options = {}) {
+        let token = getAccessToken();
+        if (!token) {
+          showToast('⚠️ Session expired. Please login again.', 'error');
+          sessionStorage.clear();
+          location.href = '/';
+          return;
+        }
+
+        options.headers = {
+          ...options.headers,
+          'Authorization': 'Bearer ' + token,
+          'Content-Type': 'application/json'
+        };
+
+        let response = await fetch(url, options);
+
+        if (response.status === 401) {
+          const refreshed = await refreshAccessToken();
+          if (refreshed) {
+            token = getAccessToken();
+            options.headers['Authorization'] = 'Bearer ' + token;
+            response = await fetch(url, options);
+          } else {
+            sessionStorage.clear();
+            showToast('⚠️ Session expired. Please login again.', 'error');
+            location.href = '/';
+            return;
+          }
+        }
+        return response;
+      }
+
+      // ---------- AUTO REFRESH CHECK ----------
+      setInterval(async () => {
+        const refresh = getRefreshToken();
+        if (!refresh) return;
+
+        try {
+          const res = await fetch('/auth/refresh', { method: 'POST', headers: { 'Authorization': 'Bearer ' + refresh } });
+          if (res.status === 401) {
+            sessionStorage.clear();
+            showToast('⚠️ Session expired. Please login again.', 'error');
+            window.location.href = '/';
+            return;
+          }
+          if (res.ok) {
+            const data = await res.json();
+            sessionStorage.setItem('access_token', data.access_token);
+          }
+        } catch (err) { console.error('Auto refresh error:', err); }
+      }, 4 * 60 * 1000);
+
+      // ---------- UI HELPERS ----------
+      function showSync(success = true) {
+        if (!syncDotEl) return;
+        syncDotEl.style.backgroundColor = success ? '#4CAF50' : '#e53935';
+        syncDotEl.classList.add('active');
+        setTimeout(() => syncDotEl.classList.remove('active'), 1000);
+      }
+
+      function setText(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text == null ? '—' : String(text);
+      }
+
+      function safeLower(v) { return (v || '').toString().trim().toLowerCase(); }
+      function esc(s) { if (s == null) return ''; return String(s).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;'); }
+
+      function setLastUpdated() {
+        state.lastUpdated = new Date();
+        if (lastUpdatedEl) lastUpdatedEl.textContent = 'Last sync: ' + state.lastUpdated.toLocaleTimeString();
+      }
+
+      function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+      }
+
+      function showConfirm(message) {
+        return new Promise((resolve) => {
+          const overlay = document.getElementById('confirmOverlay');
+          const msg = document.getElementById('confirmMessage');
+          const yesBtn = document.getElementById('confirmYes');
+          const noBtn = document.getElementById('confirmNo');
+
+          msg.textContent = message;
+          overlay.classList.remove('hide');
+
+          const cleanup = (result) => {
+            overlay.classList.add('hide');
+            yesBtn.removeEventListener('click', onYes);
+            noBtn.removeEventListener('click', onNo);
+            resolve(result);
+          };
+
+          function onYes() { cleanup(true); }
+          function onNo() { cleanup(false); }
+
+          yesBtn.addEventListener('click', onYes);
+          noBtn.addEventListener('click', onNo);
+        });
+      }
+
+      // ---------- RENDER ----------
+      function renderProfileAndBill() {
+        const p = state.profile || {};
+        setText('userName', p.name || p.display_name || 'User');
+        setText('profileName', p.username || p.display_name || 'User');
+        setText('profileNamebottom', p.username || p.display_name || 'User');
+        setText('profileEmail', p.email || '');
+        const initial = (document.getElementById('profileName').textContent || 'U')[0].toUpperCase();
+        document.getElementById('avatar').textContent = initial;
+        document.getElementById('avatarShort').textContent = initial;
+
+        const b = state.bill || {};
+        setText('billType', b.utility || b.bill_type || '—');
+        setText('billAmount', b.amount_due != null ? '₹' + Number(b.amount_due).toFixed(2) : '—');
+        setText('billDue', b.due_date || '—');
+        setText('billNote', b.status ? 'Status: ' + b.status : '');
+        setText('billStatus', b.status || '');
+        const billTypeEl = document.getElementById('billType');
+        billTypeEl.dataset.billId = b.id || '';
+      }
+
+      function renderNotifications() {
+        const arr = Array.isArray(state.notifications) ? state.notifications : [];
+        notifListEl.innerHTML = arr.length
+          ? arr.map(n => `<div class="notif">${esc(n)}</div>`).join('')
+          : '<div class="muted">No new notifications</div>';
+      }
+
+      function renderSavedMethods() {
+        const el = document.getElementById('methodsList');
+        const methods = Array.isArray(state.saved_methods) ? state.saved_methods : [];
+        el.innerHTML = methods.length
+          ? methods.map(m => `<div class="method">${esc(m)}</div>`).join('')
+          : '<div class="muted">No saved methods</div>';
+      }
+
+      function renderPayments() {
+        const payments = Array.isArray(state.payments) ? state.payments : [];
+        const filter = (document.getElementById('statusFilter')?.value || '').toLowerCase();
+        const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+
+        if (!payments.length) {
+          paymentListEl.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;">No recent payments</td></tr>';
+          setText('statAvg', '₹0.00');
+          setText('statPayments', '₹0.00');
+          return;
+        }
+
+        const filtered = payments.filter(p => {
+          if (!p) return false;
+          if (filter && (p.status || '').toLowerCase() !== filter) return false;
+          if (!q) return true;
+          const hay = `${p.date || ''} ${p.plan || p.provider || ''} ${p.amount || ''} ${p.status || ''}`.toLowerCase();
+          return hay.includes(q);
+        });
+
+        if (!filtered.length) {
+          paymentListEl.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;">No transactions match</td></tr>';
+          return;
+        }
+       const successPayments = filtered.filter(p => (p.status || '').toLowerCase() === 'success');
+       const amounts = successPayments.map(p => parseFloat(p.amount) || 0);
+        const total = amounts.reduce((a, b) => a + b, 0);
+        const avg = amounts.length ? total / amounts.length : 0;
+        setText('statPayments', '₹' + total.toFixed(2));
+        setText('statAvg', '₹' + avg.toFixed(2));
+
+        paymentListEl.innerHTML = filtered.map(p => {
+          const status = (p.status || '—');
+          const cls = status.toLowerCase();
+          const date = p.date || '—';
+          const time = p.time || '—';
+          const plan = p.plan || p.provider || '—';
+          const amount = (p.amount != null) ? '₹' + parseFloat(p.amount).toFixed(2) : '—';
+          const id = p.id || p.payment_id || '';
+          return `
+          <tr data-payment-id="${id}">
+            <td>${date}</td>
+            <td>${plan}</td>
+            <td>${amount}</td>
+            <td><span class="tag ${cls}">${status}</span></td>
+            <td>${time}</td>
+            <td style="text-align:right">
+              ${cls === 'success' ? `<button class="btn small" data-action="receipt" data-id="${id}">Receipt</button>` : 'No Receipt'}
+            </td>
+          </tr>
+        `;
+        }).join('');
+      }
+
+
+      function renderUpcoming() {
+        const body = document.getElementById('upcomingBillsBody');
+        const bills = state.upcoming || [];
+        if (!body) return;
+
+        if (!bills.length) {
+          body.innerHTML = '<tr><td colspan="5" class="muted">No upcoming bills</td></tr>';
+          setText('upcomingCount', '0 pending');
+          return;
+        }
+
+        setText('upcomingCount', bills.length + ' pending');
+        body.innerHTML = bills.map(b => `
+          <tr data-id="${b.id}">
+            <td>${esc(b.utility)}</td>
+            <td>₹${parseFloat(b.amount_due).toFixed(2)}</td>
+            <td>${esc(b.due_date)}</td>
+            <td><span class="tag pending">${esc(b.status)}</span></td>
+            <td><button class="btn small select-bill" data-id="${b.id}">Select</button></td>
+          </tr>
+        `).join('');
+      }
+
+      // ---------- BACKEND SYNC ----------
+      async function loadDashboard() {
+        if (inflight) inflight.abort();
+        inflight = new AbortController();
+        try {
+          const res = await fetchWithAuth('/auth/dashboard/data', { method: 'GET', signal: inflight.signal });
+          if (!res) return;
+          const json = await res.json().catch(() => ({}));
+          if (!res.ok) {
+            console.error('dashboard error', json);
+            showSync(false);
+            return;
+          }
+
+          state.profile = json.profile || { name: json.name, email: json.email, username: json.username };
+          state.bill = json.bill || {};
+          state.upcoming = json.upcoming || [];
+          state.payments = json.transactions || [];
+          state.notifications = json.notifications || [];
+          state.saved_methods = json.saved_methods || [];
+
+          setLastUpdated();
+          renderProfileAndBill();
+          renderNotifications();
+          renderPayments();
+          renderUpcoming();
+          renderSavedMethods();
+          showSync(true);
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            console.error('loadDashboard failed', err);
+            showSync(false);
+          }
+        } finally { inflight = null; }
+      }
+
+      // ---------- BILL SELECT ----------
+      document.getElementById('upcomingBillsBody')?.addEventListener('click', e => {
+        const btn = e.target.closest('.select-bill');
+        if (!btn) return;
+        const billId = btn.dataset.id;
+        const selected = state.upcoming.find(b => String(b.id) === String(billId));
+        if (selected) {
+          state.bill = selected;
+          renderProfileAndBill();
+          showToast(`Selected ${selected.utility} bill of ₹${selected.amount_due}`);
+        }
+      });
+
+      // ---------- PAY BILL VIA RAZORPAY ----------
+      async function payCurrentBill() {
+        const billId = document.getElementById('billType').dataset.billId;
+        if (!billId) return showToast('No pending bill found.');
+
+        try {
+          // 1️⃣ Check penalty first
+          let res = await fetchWithAuth('/auth/bill/check-penalty', {
+            method: 'POST',
+            body: JSON.stringify({ bill_id: billId })
+          });
+          const data = await res.json();
+          if (!res.ok) return showToast('⚠️ Failed to fetch bill info: ' + (data.error || 'Try again.'));
+
+          // 2️⃣ Confirm if penalty exists
+          if (data.penalty && data.penalty > 0) {
+            const proceed = await showConfirm(
+              `⚠️ Your ${data.bill_type} bill is overdue!\n` +
+              `Penalty: ₹${data.penalty.toFixed(2)}\n` +
+              `Total: ₹${data.total_amount.toFixed(2)}\n` +
+              `Proceed to payment?`
+            );
+            if (!proceed) return showToast('Payment cancelled', 'info');
+          }
+
+          // 3️⃣ Create Razorpay order
+          res = await fetchWithAuth('/auth/bill/create-order', {
+            method: 'POST',
+            body: JSON.stringify({ bill_id: billId })
+          });
+          const orderData = await res.json();
+          if (!res.ok) return showToast('❌ Failed to create Razorpay order: ' + (orderData.error || 'Try again.'));
+
+          const rzp = new Razorpay({
+            key: orderData.key,
+            amount: parseFloat(orderData.total_amount) * 100,
+            currency: orderData.currency,
+            name: "Utility Payment",
+            description: `${orderData.bill_type} Bill Payment`,
+            order_id: orderData.order_id,
+            handler: async function (response) {
+              // 4️⃣ On success → verify payment
+              try {
+                const verifyRes = await fetchWithAuth('/auth/bill/verify-payment', {
+                  method: 'POST',
+                  body: JSON.stringify({
+                    bill_id: billId,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_signature: response.razorpay_signature
+                  })
+                });
+                const verifyData = await verifyRes.json();
+                if (verifyRes.ok) {
+                  showToast('✅ Payment successful');
+                  await loadDashboard();
+                } else {
+                  showToast('❌ Payment verification failed: ' + (verifyData.error || 'Try again.'));
+                }
+              } catch (err) {
+                console.error('verify payment error', err);
+                showToast('⚠️ Error verifying payment.');
+              }
+            }
+          });
+
+          // 5️⃣ Handle failed/cancelled payment
+          rzp.on('payment.failed', async function (response) {
+            try {
+              const res = await fetchWithAuth('/auth/bill/record-failed-transaction', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  bill_id: billId,
+                  amount: orderData.total_amount,
+                  method: 'Razorpay',
+                  reason: response.error.description || 'Payment failed'
+                })
+              });
+              const data = await res.json();
+              if (res.ok) {
+                showToast('❌ Payment failed. Transaction recorded.');
+                await loadDashboard();
+              } else {
+                console.error('Failed transaction API error', data);
+                showToast('⚠️ Could not record failed transaction.');
+              }
+
+            } catch (err) {
+              console.error('Failed transaction error', err);
+              showToast('⚠️ Failed to record failed transaction.');
+            }
+          });
+
+
+          rzp.open();
+
+        } catch (err) {
+          console.error('payCurrentBill error', err);
+          showToast('⚠️ Error initiating payment.');
+        }
+      }
+
+
+      // ---------- LOGOUT ----------
+      async function doLogout() {
+        try { await fetchWithAuth('/auth/logout', { method: 'POST' }); } catch (e) { }
+        sessionStorage.clear(); location.href = '/';
+      }
+
+      // ---------- UI EVENTS ----------
+      document.getElementById('payNowBtn')?.addEventListener('click', payCurrentBill);
+      document.getElementById('logoutBtn')?.addEventListener('click', doLogout);
+      paymentListEl.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('button[data-action="receipt"]');
+        if (!btn) return;
+        const id = btn.dataset.id;
+        const p = (state.payments || []).find(x => String(x.id) === id || String(x.payment_id) === id);
+        if (p) {
+          const text = `Receipt\nID: ${p.id}\nDate: ${p.date}\nPlan: ${p.plan}\nAmount: ₹${p.amount}\nStatus: ${p.status}`;
+          navigator.clipboard?.writeText(text).then(() => showToast('Receipt copied to clipboard'));
+        }
+      });
+      document.getElementById('searchInput')?.addEventListener('input', () => {
+        clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(renderPayments, 200);
+      });
+      document.getElementById('statusFilter')?.addEventListener('change', renderPayments);
+
+      // ---------- INIT ----------
+      if (!getAccessToken()) { location.href = '/'; return; }
+      loadDashboard();
+      setInterval(loadDashboard, 10000);
+
+      // ---------- PREVENT BACK BUTTON ----------
+      window.onload = function () {
+        setTimeout(() => {
+          history.pushState(null, null, location.href);
+          window.onpopstate = () => history.go(1);
+        }, 0);
+      };
+
+      // ---------- DOWNLOAD CSV ----------
+      document.getElementById('downloadCsvBtn')?.addEventListener('click', async () => {
+        const token = sessionStorage.getItem('access_token');
+        if (!token) { alert("You are not logged in!"); return; }
+
+        try {
+          const response = await fetch('/auth/download_bills_csv', { headers: { 'Authorization': 'Bearer ' + token } });
+          if (!response.ok) { alert("Failed to download CSV."); return; }
+
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'bills_history.csv';
+          a.click();
+          window.URL.revokeObjectURL(url);
+        } catch (err) {
+          console.error(err);
+          alert("An error occurred while downloading the CSV.");
+        }
+      });
+    })();
+  </script>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <!-- Toast container -->
+  <div id="toastContainer" class="toast-container">
+  </div>
+  <!-- Custom confirm modal -->
+  <div id="confirmOverlay" class="confirm-overlay hide">
+    <div class="confirm-box">
+      <p id="confirmMessage">Are you sure?</p>
+      <div class="confirm-actions">
+        <button id="confirmYes" class="btn small success">Yes</button>
+        <button id="confirmNo" class="btn small error">No</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+</html>

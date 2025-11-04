@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fc;
+      margin: 0;
+      padding: 0;
+    }
+
+    h2 {
+      text-align: center;
+      margin-top: 40px;
+      color: #0b63ff;
+    }
+
+    .dashboard-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 40px;
+      padding: 50px 20px;
+      flex-wrap: wrap; /* Makes it responsive */
+    }
+
+    /* Left panel */
+    .panel {
+      flex: 1;
+      min-width: 300px;
+      max-width: 450px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+      padding: 30px 25px;
+      text-align: center;
+    }
+
+    .panel h3 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .panel p {
+      color: #555;
+      font-size: 15px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 12px 25px;
+      font-size: 16px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .msg {
+      margin-top: 15px;
+      color: green;
+      font-weight: bold;
+    }
+
+    /* Custom bill form styles */
+    .custom-bill-form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      text-align: left;
+    }
+
+    .custom-bill-form label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .custom-bill-form input {
+      padding: 9px 11px;
+      font-size: 0.95rem;
+      border-radius: 8px;
+      border: 1px solid #c9c9c9;
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    .custom-bill-form input:focus {
+      border-color: #0b63ff;
+      box-shadow: 0 0 4px rgba(11, 99, 255, 0.2);
+    }
+
+    .custom-btn {
+      background: linear-gradient(135deg, #0b63ff, #4785ff);
+      border: none;
+      color: white;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .custom-btn:hover {
+      background: linear-gradient(135deg, #084dc0, #3372ff);
+    }
+
+    .custom-btn:active {
+      transform: scale(0.97);
+    }
+
+    .message-area {
+      text-align: center;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      color: #333;
+    }
+
+    /* Responsive layout */
+    @media (max-width: 768px) {
+      .dashboard-container {
+        flex-direction: column;
+        align-items: center;
+        padding: 30px 15px;
+      }
+
+      .panel {
+        width: 100%;
+        max-width: 420px;
+      }
+
+      h2 {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>Admin Dashboard</h2>
+
+  <div class="dashboard-container">
+    <!-- LEFT PANEL - GENERATE BILLS FOR ALL USERS -->
+    <div class="panel">
+      <h3>Generate Monthly Bills</h3>
+      <p>Click below to generate monthly bills for all verified users.</p>
+      <button id="generateBillsBtn">Generate Bills for All Users</button>
+      <p id="adminResponse" class="msg"></p>
+    </div>
+
+    <!-- RIGHT PANEL - CUSTOM BILL CREATION -->
+    <div class="panel">
+      <h3>Add Custom Bill</h3>
+      <p>Create a specific bill for an individual user.</p>
+
+      <div class="custom-bill-form">
+        <label for="customEmail">User Email</label>
+        <input type="email" id="customEmail" placeholder="Enter user's email">
+
+        <label for="customBillType">Bill Type</label>
+        <input type="text" id="customBillType" placeholder="Enter bill type (e.g., Rent, Internet)">
+
+        <label for="customAmount">Amount (₹)</label>
+        <input type="number" id="customAmount" placeholder="Enter bill amount">
+
+        <label for="customDueDate">Due Date</label>
+        <input type="date" id="customDueDate">
+
+        <button id="generateCustomBillBtn" class="custom-btn">Generate Custom Bill</button>
+
+        <p id="customMsg" class="message-area"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Generate monthly bills for all users
+    document.getElementById("generateBillsBtn").addEventListener("click", async () => {
+      const confirmGen = confirm("Do you want to generate monthly bills for all users?");
+      if (!confirmGen) return alert("❌ Bill generation cancelled.");
+
+      const accessToken = sessionStorage.getItem("access_token");
+      if (!accessToken) return alert("⚠️ You must be logged in as admin.");
+
+      try {
+        const res = await fetch("/auth/generate-bills", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + accessToken,
+            "Content-Type": "application/json"
+          }
+        });
+
+        const data = await res.json();
+        document.getElementById("adminResponse").textContent = data.message || data.error || "Something went wrong.";
+      } catch (err) {
+        console.error("Bill generation error:", err);
+        document.getElementById("adminResponse").textContent = "❌ Something went wrong while generating bills.";
+      }
+    });
+
+    // Generate custom bill
+    document.getElementById("generateCustomBillBtn").addEventListener("click", async () => {
+      const confirmGen = confirm("Are you sure you want to create this custom bill?");
+      if (!confirmGen) return alert("❌ Custom bill cancelled.");
+
+      const accessToken = sessionStorage.getItem("access_token");
+      if (!accessToken) return alert("⚠️ Please login as admin first.");
+
+      const email = document.getElementById("customEmail").value.trim();
+      const bill_type = document.getElementById("customBillType").value;
+      const amount_due = document.getElementById("customAmount").value.trim();
+      const due_date = document.getElementById("customDueDate").value;
+
+      if (!email || !bill_type || !amount_due || !due_date)
+        return alert("Please fill all fields before submitting.");
+
+      try {
+        const res = await fetch("/auth/generate-custom-bill", {
+          method: "POST",
+          headers: {
+            "Authorization": "Bearer " + accessToken,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ email, bill_type, amount_due, due_date })
+        });
+
+        const data = await res.json();
+        document.getElementById("customMsg").textContent = data.message || data.error || "Failed to create bill.";
+      } catch (err) {
+        console.error("Custom bill error:", err);
+        document.getElementById("customMsg").textContent = "❌ Something went wrong while creating the custom bill.";
+      }
+    });
+  </script>
+</body>
+</html>

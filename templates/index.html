@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UtilityPay</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="split">
+    <div class="left">
+      <img src="/static/left.jpg" alt="Illustration">
+    </div>
+
+    <div class="right">
+      <h2 id="title">Register</h2>
+
+      <form id="authForm">
+        <div id="usernameGroup">
+          <input type="text" id="username" placeholder="Enter username" />
+        </div>      
+        <input id="email" type="email" placeholder="Email" required />
+        <div class="password-container">
+          <input id="password" type="password" placeholder="Password (min 8)" required />
+          <button type="button" id="togglePwd" class="eye">👁️</button>
+        </div>
+        <button id="submitBtn" type="submit">Register</button>
+      </form>
+
+      <div id="otpArea" class="hide">
+        <p style=" margin-top: 20px;">Enter the OTP sent to <span id="otpEmail"></span></p>
+        <input id="otp" type="text" placeholder="6-digit OTP" maxlength="6" />
+        <button id="verifyBtn">Verify OTP</button>
+        <button id="resendBtn">Resend OTP</button>
+      </div>
+
+      <p id="switchText">Already have an account? <span id="switchLink">Login</span></p>
+      <div id="status" role="status"></div>
+      <button id="logoutBtn" class="hide">Logout</button>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

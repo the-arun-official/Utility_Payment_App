@@ -1,0 +1,13 @@
+Flask
+Flask-Cors
+Flask-SQLAlchemy
+Flask-Migrate
+Flask-JWT-Extended
+Flask-Mail
+python-dotenv
+email-validator
+razorpay
+Werkzeug
+Jinja2
+itsdangerous
+click

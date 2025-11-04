@@ -1,0 +1,162 @@
+:root {
+    --accent: #007aff;
+    --muted: #6b7280;
+    --bg: #ffffff;
+  }
+  
+  /* Reset */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial;
+  }
+  
+  html, body {
+    height: 100%;
+    width: 100%;
+  }
+  
+  /* -------- Layout -------- */
+  .split {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+  }
+  
+  /* Left image */
+  .left {
+    flex: 1;
+  }
+  
+  .left img {
+    padding: 50px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Right side with form */
+  .right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: var(--bg);
+    padding: 40px;
+  }
+  
+  /* Limit form width */
+  .right form, 
+  .right #otpArea {
+    width: 100%;
+    max-width: 350px;
+  }
+  
+  .right h2 {
+    font-size: 26px;
+    font-weight: 600;
+    color: #111;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  
+  /* -------- Inputs -------- */
+  input {
+    width: 100%;
+    padding: 10px 12px;
+    margin: 8px 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+  }
+  
+  input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  
+  /* Password field */
+  .password-container {
+    position: relative;
+  }
+  
+  button.eye {
+    width: 10%;
+    position: absolute;
+    right: 10px;
+    top: 30%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #555;
+  }
+  button.eye:hover{
+background: none;
+  }
+  /* -------- Buttons -------- */
+  button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.2s ease;
+  }
+  
+  button:hover {
+    background: #005edc;
+  }
+  
+  /* -------- Text -------- */
+  #switchText {
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+  }
+  
+  #switchLink {
+    color: var(--accent);
+    cursor: pointer;
+  }
+  
+  #status {
+    margin-top: 10px;
+    color: var(--accent);
+    font-size: 14px;
+    text-align: center;
+  }
+  
+  .hide {
+    display: none;
+  }
+  
+  /* -------- Responsive -------- */
+  @media (max-width: 768px) {
+    .split {
+      flex-direction: column;
+    }
+  
+    .left {
+      height: 40vh;
+    }
+  
+    .right {
+      padding: 30px;
+    }
+  
+    .right form, 
+    .right #otpArea {
+      max-width: 100%;
+    }
+  }
+  
